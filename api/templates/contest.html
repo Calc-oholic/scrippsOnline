@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling UIL Practice</title>
+    <style>
+        body {
+            background-color: #333;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #444;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 400px;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 20px;
+        }
+        label {
+            font-size: 16px;
+        }
+        input[type="text"] {
+            font-size: 16px;
+            width: 100%;
+            padding: 5px;
+        }
+        button {
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        p {
+            font-size: 16px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+        .credits {
+            position: absolute;
+            bottom: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .incorrect {
+            position: absolute;
+            top: 80px;
+            right: 0;
+            width: 200px;
+            height: 100px;
+        }
+        .tip {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+        .accented-keyboard {
+            position: absolute;
+            top: 10px;
+            background-color: #777;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .accented-keyboard button {
+            font-size: 16px;
+            margin: 0 5px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Spelling Practice</h1>
+        <form method="POST" action="{{ url_for('contest') }}">
+            <h2>Word {{ current_word_idx + 1 }}/{{ total_words }}</h2>
+            <label for="user_input">Type the word:</label>
+            <input type="text" name="user_input" id="user_input" required autocomplete="off">
+            <br>
+            <button type="button" onclick="pronounce_word();">Pronounce</button>
+            <button type="button" onclick="pronounce_alt_word();">Alternate Pronunciation</button>
+            <audio id="audio-player" controls style="display: none;">
+                <source src="{{ audio_url }}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <button type="submit">Submit</button>
+        </form>
+        <script>
+            {% if feedback %}
+                var audio = document.getElementById('audio-player');
+                var audioUrl = "{{ audio_url }}";
+                audio.src = audioUrl;
+                audio.load();
+                audio.play();
+            {% endif %}
+        </script>
+        <div>
+            <p>Score: {{ current_word_idx }}/{{ total_words }}</p>
+        </div>
+        <div>
+            <h2>Feedback:</h2>
+            <ul>
+                {% if feedback %}
+                    <p>{{ feedback }}</p>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    <div class="tip">
+        <p><strong>Tip:</strong> Hold Alt and press Enter in the text box to pronounce the word.</p>
+    </div>
+    <div class="incorrect">
+        <ul>
+            {% for wrong_word in wrong_words %}
+                <li>{{ wrong_word }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="accented-keyboard" id="accentedKeyboard">
+        <button onclick="insertAccent('á')">á</button>
+        <button onclick="insertAccent('â')">â</button>
+        <button onclick="insertAccent('à')">à</button>
+        <button onclick="insertAccent('é')">é</button>
+        <button onclick="insertAccent('è')">è</button>
+        <button onclick="insertAccent('ê')">ê</button>
+        <button onclick="insertAccent('í')">í</button>
+        <button onclick="insertAccent('î')">î</button>
+        <button onclick="insertAccent('ï')">ï</button>
+        <button onclick="insertAccent('ó')">ó</button>
+        <button onclick="insertAccent('ô')">ô</button>
+        <button onclick="insertAccent('ö')">ö</button>
+        <button onclick="insertAccent('ú')">ú</button>
+        <button onclick="insertAccent('ü')">ü</button>
+        <button onclick="insertAccent('ñ')">ñ</button>
+        <button onclick="insertAccent('ç')">ç</button>
+    </div>
+    <div class="credits">
+        <p>Credits to <a href="https://github.com/Calc-oholic/">Calc-oholic</a> and <a href="https://github.com/FollowedPlate/">FollowedPlate</a></p>
+    </div>
+    <script>
+        function pronounce_word() {
+            var audio = document.getElementById('audio-player');
+            var audioUrl = "/pronounce?" + new Date().getTime(); // Append a timestamp to the URL
+            audio.src = audioUrl;
+            audio.load();
+            audio.play();
+        }
+        function pronounce_alt_word() {
+            var audio = document.getElementById('audio-player');
+            var audioUrl = "/altpronounce?" + new Date().getTime(); // Append a timestamp to the URL
+            audio.src = audioUrl;
+            audio.load();
+            audio.play();
+        }
+
+        // function alt_pronunciation() {
+        //     fetch('/alt_pronunciation').then(response => response.text()).then(data => console.log(data));
+        // }
+
+        window.addEventListener('load', function() {
+            document.getElementById('user_input').focus();
+        });
+
+        document.getElementById('user_input').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && e.altKey) {
+                pronounce_word();
+            }
+        });
+
+        function insertAccent(accent) {
+            var inputBox = document.getElementById('user_input');
+            var startPos = inputBox.selectionStart;
+            var endPos = inputBox.selectionEnd;
+            var textBefore = inputBox.value.substring(0, startPos);
+            var textAfter = inputBox.value.substring(endPos, inputBox.value.length);
+            inputBox.value = textBefore + accent + textAfter;
+            inputBox.setSelectionRange(startPos + accent.length, startPos + accent.length);
+            inputBox.focus();
+        }
+    </script>
+</body>
+</html>
