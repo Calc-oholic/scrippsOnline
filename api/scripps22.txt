@@ -226,7 +226,8 @@ presentient
 chimera
 exiguous
 avgolemono
-semaphoreConestoga
+semaphore
+Conestoga
 Teutonic
 gambol
 heinousness
